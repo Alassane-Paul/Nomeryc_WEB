@@ -1,0 +1,442 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==================== BASE STYLES ==================== */
+@layer base {
+  * {
+    border-color: #E2E0F5;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-light-bg text-light-text font-sans antialiased;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  /* Fond animé discret ("aurora") — site public uniquement.
+     Deux halos flous qui dérivent lentement en arrière-plan, dans les
+     couleurs de la marque. Désactivé sur le dashboard (voir plus bas)
+     et respecte prefers-reduced-motion. */
+  body::before,
+  body::after {
+    content: '';
+    position: fixed;
+    z-index: -1;
+    width: 45vw;
+    height: 45vw;
+    max-width: 600px;
+    max-height: 600px;
+    border-radius: 9999px;
+    filter: blur(110px);
+    opacity: 0.35;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  body::before {
+    top: -10%;
+    left: -5%;
+    background: #5B50C8; /* brand-purple */
+    animation: aurora-drift-1 26s ease-in-out infinite;
+  }
+
+  body::after {
+    bottom: -10%;
+    right: -5%;
+    background: #3DB38A; /* brand-green */
+    animation: aurora-drift-2 30s ease-in-out infinite;
+  }
+
+  @keyframes aurora-drift-1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(8vw, 6vh) scale(1.15); }
+  }
+
+  @keyframes aurora-drift-2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-6vw, -8vh) scale(1.1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body::before,
+    body::after {
+      animation: none;
+    }
+  }
+
+  /* Dashboard override via .dashboard-layout class */
+  .dashboard-layout {
+    @apply bg-brand-dark text-white;
+  }
+
+  /* Pas d'aurore sur le dashboard : on veut un fond stable pour travailler. */
+  .dashboard-layout::before,
+  .dashboard-layout::after,
+  body:has(.dashboard-layout)::before,
+  body:has(.dashboard-layout)::after {
+    display: none;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold;
+  }
+
+  ::selection {
+    @apply bg-brand-purple/20 text-brand-purple;
+  }
+
+  ::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-light-bg-secondary;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-brand-purple/30 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-brand-purple/60;
+  }
+
+  .dashboard-layout ::-webkit-scrollbar-track {
+    @apply bg-sidebar-bg;
+  }
+
+  .dashboard-layout ::-webkit-scrollbar-thumb {
+    @apply bg-brand-purple/60 rounded-full;
+  }
+}
+
+/* ==================== COMPONENT CLASSES ==================== */
+@layer components {
+
+  /* === CARDS — Light (site public) === */
+  .card-light {
+    @apply bg-light-card border border-light-border rounded-2xl p-6 shadow-light;
+  }
+
+  .card-light-hover {
+    @apply card-light transition-all duration-300
+           hover:border-brand-purple/40 hover:shadow-brand hover:-translate-y-1;
+  }
+
+  /* === CARDS — Dark (dashboard) === */
+  .card {
+    @apply bg-surface-card border border-surface-border rounded-2xl p-6 shadow-card-dark;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-300 hover:border-brand-purple/50 hover:shadow-brand hover:-translate-y-1;
+  }
+
+  .card-glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6;
+  }
+
+  /* === BUTTONS === */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm
+           transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
+           focus:outline-none focus:ring-2 focus:ring-brand-purple/40;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-purple text-white hover:bg-brand-purple-dark hover:shadow-brand active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply btn bg-light-card text-light-text border border-light-border
+           hover:border-brand-purple/40 hover:bg-light-bg-secondary active:scale-95;
+  }
+
+  /* btn-secondary inside dark dashboard */
+  .dashboard-layout .btn-secondary {
+    @apply bg-surface-card text-white border-surface-border hover:border-brand-purple/50 hover:bg-surface-hover;
+  }
+
+  .btn-success {
+    @apply btn bg-brand-green text-white hover:bg-brand-green-dark hover:shadow-green active:scale-95;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700 active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply btn text-light-text-secondary hover:text-light-text hover:bg-light-bg-secondary active:scale-95;
+  }
+
+  .dashboard-layout .btn-ghost {
+    @apply text-gray-300 hover:text-white hover:bg-surface-hover;
+  }
+
+  .btn-outline-green {
+    @apply btn border-2 border-brand-green text-brand-green hover:bg-brand-green hover:text-white active:scale-95;
+  }
+
+  .btn-lg {
+    @apply px-7 py-3.5 text-base rounded-2xl;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs rounded-lg;
+  }
+
+  /* === INPUTS === */
+  .input {
+    @apply w-full bg-light-card border border-light-border rounded-xl px-4 py-3 text-light-text
+           placeholder:text-light-text-muted text-sm
+           focus:outline-none focus:ring-2 focus:ring-brand-purple/40 focus:border-brand-purple/60
+           transition-all duration-200;
+  }
+
+  .dashboard-layout .input {
+    @apply bg-surface border-surface-border text-white placeholder:text-gray-500
+           focus:ring-brand-purple/50 focus:border-brand-purple/50;
+  }
+
+  .input-label {
+    @apply block text-sm font-medium text-light-text-secondary mb-1.5;
+  }
+
+  .dashboard-layout .input-label {
+    @apply text-gray-300;
+  }
+
+  .input-error {
+    @apply border-red-500 focus:ring-red-500/50;
+  }
+
+  .input-group {
+    @apply flex flex-col gap-1;
+  }
+
+  /* === BADGES === */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold;
+  }
+
+  .badge-purple {
+    @apply badge bg-brand-purple/10 text-brand-purple border border-brand-purple/20;
+  }
+
+  .badge-green {
+    @apply badge bg-brand-green/10 text-brand-green border border-brand-green/20;
+  }
+
+  .badge-yellow {
+    @apply badge bg-yellow-500/10 text-yellow-600 border border-yellow-400/30;
+  }
+
+  .badge-red {
+    @apply badge bg-red-500/10 text-red-500 border border-red-400/30;
+  }
+
+  .badge-gray {
+    @apply badge bg-light-bg-secondary text-light-text-muted border border-light-border;
+  }
+
+  /* dashboard badges */
+  .dashboard-layout .badge-purple {
+    @apply bg-brand-purple/20 text-brand-purple-light border-brand-purple/30;
+  }
+  .dashboard-layout .badge-green {
+    @apply bg-brand-green/20 text-brand-green border-brand-green/30;
+  }
+  .dashboard-layout .badge-yellow {
+    @apply bg-yellow-500/20 text-yellow-400 border-yellow-500/30;
+  }
+  .dashboard-layout .badge-red {
+    @apply bg-red-500/20 text-red-400 border-red-500/30;
+  }
+  .dashboard-layout .badge-gray {
+    @apply bg-gray-500/20 text-gray-400 border-gray-500/30;
+  }
+
+  /* === GRADIENTS === */
+  .gradient-text {
+    @apply bg-gradient-brand bg-clip-text text-transparent;
+  }
+
+  /* === GLASS MORPHISM (dark only, hero sections) === */
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+
+  .glass-dark {
+    @apply bg-brand-dark/80 backdrop-blur-md border border-surface-border;
+  }
+
+  /* === NAVBAR === */
+  .navbar-public {
+    @apply bg-white/95 backdrop-blur-sm border-b border-light-border shadow-navbar;
+  }
+
+  /* === SIDEBAR (dark dashboard) === */
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sidebar-text text-sm font-medium
+           transition-all duration-200 cursor-pointer
+           hover:bg-sidebar-hover hover:text-sidebar-text-active;
+  }
+
+  .sidebar-item-active {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold
+           bg-brand-purple text-white cursor-pointer;
+  }
+
+  /* === SECTIONS (public light) === */
+  .section-title {
+    @apply text-3xl md:text-4xl font-display font-bold text-light-text;
+  }
+
+  .section-title-white {
+    @apply text-3xl md:text-4xl font-display font-bold text-white;
+  }
+
+  .section-subtitle {
+    @apply text-light-text-muted text-lg mt-3 max-w-2xl;
+  }
+
+  /* === TABLE === */
+  .table-wrapper {
+    @apply overflow-x-auto rounded-2xl border border-light-border;
+  }
+
+  .dashboard-layout .table-wrapper {
+    @apply border-surface-border;
+  }
+
+  .table {
+    @apply w-full text-sm text-left;
+  }
+
+  .table thead tr {
+    @apply bg-light-bg-secondary border-b border-light-border;
+  }
+
+  .dashboard-layout .table thead tr {
+    @apply bg-surface-card border-surface-border;
+  }
+
+  .table thead th {
+    @apply px-6 py-4 text-light-text-muted font-semibold uppercase tracking-wider text-xs;
+  }
+
+  .dashboard-layout .table thead th {
+    @apply text-gray-400;
+  }
+
+  .table tbody tr {
+    @apply border-b border-light-border/60 hover:bg-light-bg-secondary transition-colors duration-150;
+  }
+
+  .dashboard-layout .table tbody tr {
+    @apply border-surface-border/50 hover:bg-surface-hover;
+  }
+
+  .table tbody td {
+    @apply px-6 py-4 text-light-text-secondary;
+  }
+
+  .dashboard-layout .table tbody td {
+    @apply text-gray-200;
+  }
+
+  /* === PROGRESS BAR === */
+  .progress-bar {
+    @apply h-2 bg-light-border rounded-full overflow-hidden;
+  }
+
+  .dashboard-layout .progress-bar {
+    @apply bg-surface;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-500 ease-out;
+    background: linear-gradient(90deg, #5B50C8 0%, #3DB38A 100%);
+  }
+
+  /* === STAT CARDS === */
+  .stat-card {
+    @apply card-light-hover flex flex-col gap-3;
+  }
+
+  .dashboard-layout .stat-card {
+    @apply card-hover flex flex-col gap-3;
+  }
+
+  .stat-value {
+    @apply text-3xl font-bold text-light-text;
+  }
+
+  .dashboard-layout .stat-value {
+    @apply text-white;
+  }
+
+  .stat-label {
+    @apply text-sm text-light-text-muted font-medium;
+  }
+
+  .dashboard-layout .stat-label {
+    @apply text-gray-400;
+  }
+
+  /* === DIVIDERS === */
+  .divider {
+    @apply border-t border-light-border;
+  }
+
+  .dashboard-layout .divider {
+    @apply border-surface-border;
+  }
+}
+
+/* ==================== UTILITIES ==================== */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .bg-dots-light {
+    background-image: radial-gradient(rgba(91, 80, 200, 0.12) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .bg-dots {
+    background-image: radial-gradient(rgba(91, 80, 200, 0.15) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(91, 80, 200, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(91, 80, 200, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .bg-grid-light {
+    background-image:
+      linear-gradient(rgba(91, 80, 200, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(91, 80, 200, 0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+}
