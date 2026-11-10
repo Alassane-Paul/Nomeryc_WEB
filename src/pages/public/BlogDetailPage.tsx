@@ -64,49 +64,54 @@ export function BlogDetailPage() {
         setPost(data);
       } catch (err) {
         // Mock fallback if offline/no post found yet
-//         setPost({
-//           id: '1',
-//           title: 'Pourquoi migrer vers une architecture TypeScript en 2026',
-//           slug: slug,
-//           excerpt: 'Sécurité de typage, productivité décuplée et maintenance facilitée : découvrez les bénéfices réels du passage à TypeScript pour vos systèmes critiques.',
-//           content: `
-// TypeScript n'est plus une simple option : c'est devenu la fondation incontournable des applications d'entreprise pérennes.
+        //         setPost({
+        //           id: '1',
+        //           title: 'Pourquoi migrer vers une architecture TypeScript en 2026',
+        //           slug: slug,
+        //           excerpt: 'Sécurité de typage, productivité décuplée et maintenance facilitée : découvrez les bénéfices réels du passage à TypeScript pour vos systèmes critiques.',
+        //           content: `
+        // TypeScript n'est plus une simple option : c'est devenu la fondation incontournable des applications d'entreprise pérennes.
 
-// ### 1. La fin des erreurs d'exécution silencieuses
-// En Javascript classique, l'erreur undefined is not a function ne survient qu'au runtime, souvent en production sous les yeux d'un utilisateur final. TypeScript attrape ces anomalies directement dans l'IDE dès la phase d'écriture.
+        // ### 1. La fin des erreurs d'exécution silencieuses
+        // En Javascript classique, l'erreur undefined is not a function ne survient qu'au runtime, souvent en production sous les yeux d'un utilisateur final. TypeScript attrape ces anomalies directement dans l'IDE dès la phase d'écriture.
 
-// ### 2. Refactoring sans crainte
-// Modifier la signature d'une fonction ou la structure d'un modèle Sequelize sans TypeScript requiert de vérifier manuellement des dizaines de fichiers. Le compilateur TS agit comme un filet de sécurité infaillible qui signale immédiatement tout désalignement.
+        // ### 2. Refactoring sans crainte
+        // Modifier la signature d'une fonction ou la structure d'un modèle Sequelize sans TypeScript requiert de vérifier manuellement des dizaines de fichiers. Le compilateur TS agit comme un filet de sécurité infaillible qui signale immédiatement tout désalignement.
 
-// ### 3. Autocomplétion et documentation vivante
-// Chaque interface TypeScript sert de contrat auto-documenté entre les couches logicielles (Frontend <-> Backend API). Les nouveaux développeurs qui rejoignent votre équipe deviennent opérationnels deux fois plus rapidement.
+        // ### 3. Autocomplétion et documentation vivante
+        // Chaque interface TypeScript sert de contrat auto-documenté entre les couches logicielles (Frontend <-> Backend API). Les nouveaux développeurs qui rejoignent votre équipe deviennent opérationnels deux fois plus rapidement.
 
-// ### 4. Réduction drastique des coûts de maintenance
-// Les études démontrent une baisse de près de 35% des régressions logicielles après une migration vers TypeScript strict.
+        // ### 4. Réduction drastique des coûts de maintenance
+        // Les études démontrent une baisse de près de 35% des régressions logicielles après une migration vers TypeScript strict.
 
-// ### Conclusion
-// Investir dans TypeScript dès le démarrage d'un projet garantit un code maintenable, testable et évolutif sur le long terme pour soutenir la croissance de votre entreprise.
-//           `,
-//           category: 'Ingénierie Web',
-//           tags: ['TypeScript', 'Node.js', 'React', 'Bonnes Pratiques'],
-//           coverImage: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&auto=format&fit=crop&q=80',
-//           status: 'publie',
-//           publishedAt: new Date().toISOString(),
-//           author: {
-//             id: 'a1',
-//             firstName: 'Alassane',
-//             lastName: 'Paul',
-//             avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-//           },
-//           createdAt: new Date().toISOString(),
-//           updatedAt: new Date().toISOString(),
-//         });
+        // ### Conclusion
+        // Investir dans TypeScript dès le démarrage d'un projet garantit un code maintenable, testable et évolutif sur le long terme pour soutenir la croissance de votre entreprise.
+        //           `,
+        //           category: 'Ingénierie Web',
+        //           tags: ['TypeScript', 'Node.js', 'React', 'Bonnes Pratiques'],
+        //           coverImage: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&auto=format&fit=crop&q=80',
+        //           status: 'publie',
+        //           publishedAt: new Date().toISOString(),
+        //           author: {
+        //             id: 'a1',
+        //             firstName: 'Alassane',
+        //             lastName: 'Paul',
+        //             avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+        //           },
+        //           createdAt: new Date().toISOString(),
+        //           updatedAt: new Date().toISOString(),
+        //         });
       } finally {
         setLoading(false);
       }
     }
     loadPost();
   }, [slug]);
+
+  const { blocks, toc: tocItems } = useMemo(
+    () => parseContent(post?.content ?? ''),
+    [post?.content]
+  );
 
   if (loading) {
     return (
@@ -126,7 +131,6 @@ export function BlogDetailPage() {
   }
 
   // Sommaire extrait dynamiquement du contenu réel de l'article (plus de liste statique).
-  const { blocks, toc: tocItems } = useMemo(() => parseContent(post.content), [post.content]);
   const wordCount = post.content.split(/\s+/).filter(Boolean).length;
   const readingMinutes = Math.max(1, Math.round(wordCount / 200));
 
@@ -176,7 +180,7 @@ export function BlogDetailPage() {
 
         {/* Layout with Article Body & Floating Sommaire (Table of Contents) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-          
+
           {/* Main Article Content */}
           <article className="lg:col-span-8 bg-white border border-light-border rounded-3xl p-6 md:p-10 shadow-sm space-y-8">
             {/* Featured Image */}

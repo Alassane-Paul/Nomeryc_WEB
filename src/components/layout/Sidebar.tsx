@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, FolderOpen, FileText, Receipt,
@@ -7,6 +7,9 @@ import {
   HelpCircle, MessageSquareQuote, Tags, Inbox,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
+import { messagesService } from '../../services/messages.service';
+import { notificationsService } from '../../services/notifications.service';
+import { connectSocket, onSocketEvent } from '../../services/socket.service';
 
 interface NavItem {
   icon: React.ElementType;
@@ -50,11 +53,54 @@ interface SidebarProps {
 
 export function Sidebar({ role }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
 
   const navItems = role === 'admin' ? adminNav : clientNav;
+
+  const loadUnreadCounts = useCallback(async () => {
+    const [messagesResult, notificationsResult] = await Promise.allSettled([
+      messagesService.unreadCount(),
+      notificationsService.unreadCount(),
+    ]);
+
+    if (messagesResult.status === 'fulfilled') {
+      setUnreadMessages(messagesResult.value);
+    } else {
+      console.error('Échec du chargement du nombre de messages non lus :', messagesResult.reason);
+    }
+
+    if (notificationsResult.status === 'fulfilled') {
+      setUnreadNotifications(notificationsResult.value);
+    } else {
+      console.error('Échec du chargement du nombre de notifications non lues :', notificationsResult.reason);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadUnreadCounts();
+  }, [loadUnreadCounts, location.pathname, user?.id]);
+
+  useEffect(() => {
+    connectSocket();
+    const offNewMessage = onSocketEvent('message:new', loadUnreadCounts);
+    const offReadMessage = onSocketEvent('message:read', loadUnreadCounts);
+    const offNewNotification = onSocketEvent('notification:new', loadUnreadCounts);
+
+    const intervalId = window.setInterval(loadUnreadCounts, 15000);
+    window.addEventListener('focus', loadUnreadCounts);
+
+    return () => {
+      offNewMessage();
+      offReadMessage();
+      offNewNotification();
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', loadUnreadCounts);
+    };
+  }, [loadUnreadCounts]);
 
   const handleLogout = async () => {
     await logout();
@@ -101,8 +147,13 @@ export function Sidebar({ role }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
-        {navItems.map(({ icon: Icon, label, href, badge }) => {
+        {navItems.map(({ icon: Icon, label, href }) => {
           const active = isActive(href);
+          const badge = href.endsWith('/messages')
+            ? unreadMessages
+            : href.endsWith('/notifications')
+              ? unreadNotifications
+              : 0;
           return (
             <Link
               key={href}
@@ -128,10 +179,13 @@ export function Sidebar({ role }: SidebarProps) {
             >
               <Icon size={17} className="shrink-0" />
               {!collapsed && <span>{label}</span>}
-              {badge && !collapsed && (
+              {badge > 0 && !collapsed && (
                 <span className="ml-auto bg-brand-purple text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
                   {badge}
                 </span>
+              )}
+              {badge > 0 && collapsed && (
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-brand-purple" />
               )}
               {/* Tooltip when collapsed */}
               {collapsed && (

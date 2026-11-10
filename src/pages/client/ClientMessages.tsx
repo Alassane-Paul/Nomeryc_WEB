@@ -22,7 +22,18 @@ export function ClientMessages() {
   const loadMessages = useCallback(async () => {
     try {
       const data = await messagesService.getConversation();
-      setMessages((data || []).filter((m): m is Message => Boolean(m && m.id)));
+      setMessages((current) => {
+        const byId = new Map<string, Message>();
+        for (const message of (data || []).filter((m): m is Message => Boolean(m && m.id))) {
+          byId.set(message.id, message);
+        }
+        for (const message of current) {
+          byId.set(message.id, message);
+        }
+        return [...byId.values()].sort(
+          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+      });
     } catch {
       // silencieux
     } finally {
@@ -34,6 +45,24 @@ export function ClientMessages() {
   useEffect(() => {
     loadMessages();
     messagesService.markAllAsRead().catch(() => {});
+  }, [loadMessages]);
+
+  useEffect(() => {
+    const refreshVisibleConversation = () => {
+      if (document.visibilityState === 'visible') {
+        loadMessages();
+      }
+    };
+
+    const intervalId = window.setInterval(refreshVisibleConversation, 2000);
+    window.addEventListener('focus', refreshVisibleConversation);
+    document.addEventListener('visibilitychange', refreshVisibleConversation);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', refreshVisibleConversation);
+      document.removeEventListener('visibilitychange', refreshVisibleConversation);
+    };
   }, [loadMessages]);
 
   // ===== TEMPS RÉEL =====
@@ -109,6 +138,7 @@ export function ClientMessages() {
       }
       const sent = await messagesService.send({ content, attachments });
       if (sent && sent.id) setMessages((prev) => (prev.some((m) => m.id === sent.id) ? prev : [...prev, sent]));
+      await loadMessages();
     } catch {
       setText(content === '(pièce jointe)' ? '' : content);
       setPendingFiles(files);

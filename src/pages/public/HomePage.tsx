@@ -56,9 +56,9 @@ const services = [
 ];
 
 const stats = [
-  { value: '10+', label: "Années d'expérience", icon: Award },
-  { value: '250+', label: 'Projets réalisés', icon: BadgeCheck },
-  { value: '120+', label: 'Clients satisfaits', icon: Users },
+  { value: '2+', label: "Années d'expérience", icon: Award },
+  { value: '22+', label: 'Projets réalisés', icon: BadgeCheck },
+  { value: '14', label: 'Clients satisfaits', icon: Users },
   { value: '30+', label: 'Technologies maîtrisées', icon: Zap },
 ];
 

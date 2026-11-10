@@ -19,7 +19,7 @@ const PLAN_LABELS: Record<string, string> = {
   enterprise: 'Enterprise',
 };
 
-const BUDGET_MIN = 500_000;
+const BUDGET_MIN = 5_000;
 const BUDGET_MAX = 10_000_000;
 
 function formatXOF(val: number): string {
@@ -156,7 +156,7 @@ export function ContactPage() {
                     <div className="input-group">
                       <label className="input-label">Budget estimé</label>
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-light-text-muted">500 000 XOF</span>
+                        <span className="text-light-text-muted">5 000 XOF</span>
                         <span className="font-semibold text-brand-purple">{formatXOF(budget)}</span>
                         <span className="text-light-text-muted">10 000 000+ XOF</span>
                       </div>
@@ -170,7 +170,7 @@ export function ContactPage() {
                         type="range"
                         min={BUDGET_MIN}
                         max={BUDGET_MAX}
-                        step={500_000}
+                        step={5_000}
                         value={budget}
                         onChange={e => setBudget(parseInt(e.target.value))}
                         className="w-full mt-2 accent-brand-purple cursor-pointer"

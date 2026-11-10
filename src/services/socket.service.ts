@@ -11,7 +11,13 @@ export function connectSocket(): Socket | null {
   const token = localStorage.getItem('nomeryc_token');
   if (!token) return null;
 
-  if (socket?.connected) return socket;
+  if (socket) {
+    socket.auth = { token };
+    if (!socket.connected && !socket.active) {
+      socket.connect();
+    }
+    return socket;
+  }
 
   socket = io(SOCKET_URL, {
     auth: { token },

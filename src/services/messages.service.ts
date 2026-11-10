@@ -37,6 +37,11 @@ export interface Conversation {
 }
 
 export const messagesService = {
+  async unreadCount(): Promise<number> {
+    const res = await apiClient.get('/messages/unread-count');
+    return res.data.data.count;
+  },
+
   /** Client : tout son historique. Admin : historique lié à un projet. */
   async getConversation(projectId?: string): Promise<Message[]> {
     const res = await apiClient.get('/messages', { params: { projectId } });

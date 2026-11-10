@@ -38,7 +38,20 @@ export function AdminMessages() {
   const loadMessages = useCallback(async (clientId: string) => {
     try {
       const data = await messagesService.getConversationWithClient(clientId);
-      setMessages((data || []).filter((m): m is Message => Boolean(m && m.id)));
+      if (selectedRef.current !== clientId) return;
+
+      setMessages((current) => {
+        const byId = new Map<string, Message>();
+        for (const message of (data || []).filter((m): m is Message => Boolean(m && m.id))) {
+          byId.set(message.id, message);
+        }
+        for (const message of current) {
+          byId.set(message.id, message);
+        }
+        return [...byId.values()].sort(
+          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+      });
     } catch {
       // silencieux
     }
@@ -50,8 +63,30 @@ export function AdminMessages() {
 
   useEffect(() => {
     if (!selectedClientId) return;
+    setMessages([]);
     loadMessages(selectedClientId);
     messagesService.markAllAsRead(selectedClientId).then(loadConversations).catch(() => {});
+  }, [selectedClientId, loadMessages, loadConversations]);
+
+  useEffect(() => {
+    if (!selectedClientId) return;
+
+    const refreshVisibleConversation = () => {
+      if (document.visibilityState === 'visible') {
+        loadMessages(selectedClientId);
+        loadConversations();
+      }
+    };
+
+    const intervalId = window.setInterval(refreshVisibleConversation, 2000);
+    window.addEventListener('focus', refreshVisibleConversation);
+    document.addEventListener('visibilitychange', refreshVisibleConversation);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', refreshVisibleConversation);
+      document.removeEventListener('visibilitychange', refreshVisibleConversation);
+    };
   }, [selectedClientId, loadMessages, loadConversations]);
 
   useEffect(() => {
@@ -141,7 +176,7 @@ export function AdminMessages() {
       }
       const sent = await messagesService.send({ recipientId: selectedClientId, content, attachments });
       if (sent && sent.id) setMessages((prev) => (prev.some((m) => m.id === sent.id) ? prev : [...prev, sent]));
-      loadConversations();
+      await Promise.all([loadMessages(selectedClientId), loadConversations()]);
     } catch {
       setText(content === '(pièce jointe)' ? '' : content);
       setPendingFiles(files);
